@@ -1,0 +1,51 @@
+# That playbook installing MinIO
+---
+
+- name: Install MinIO from RPM
+  ansible.builtin.dnf:
+    name: https://dl.min.io/server/minio/release/linux-amd64/minio-{{ minio_build }}.x86_64.rpm
+    state: present
+    disable_gpg_check: true
+  when: ansible_os_family == 'RedHat'
+
+- name: Create MinIO user
+  ansible.builtin.user:
+    name: minio-user
+    shell: /bin/false
+    system: true
+
+- name: Create MinIO data dir with rights
+  ansible.builtin.file:
+    path: "{{ minio_data_path }}"
+    state: directory
+    owner: minio-user
+    group: minio-user
+    recurse: true
+    mode: 0700
+
+- name: Create MinIO config from template
+  ansible.builtin.template:
+    src: templates/minio.j2
+    dest: /etc/default/minio
+    owner: minio-user
+    group: minio-user
+    mode: 0700
+
+- name: Opening ports 9000-9001/TCP via Firewalld (on RHEL based distrs)
+  ansible.posix.firewalld:
+    port: 9000-9001/tcp
+    permanent: true
+    state: enabled
+  when: ansible_os_family == 'RedHat'
+
+- name: Restart Firewalld
+  ansible.builtin.systemd_service:
+    name: firewalld.service
+    state: restarted
+
+- name: Starting MinIO and enabling service on cluster nodes
+  ansible.builtin.systemd_service:
+    name: minio.service
+    state: started
+    enabled: true
+    daemon_reload: true

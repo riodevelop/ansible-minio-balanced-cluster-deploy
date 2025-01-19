@@ -1,0 +1,43 @@
+# That playbook installing NGINX
+---
+
+- name: Installing NGINX
+  ansible.builtin.dnf:
+    name:
+      - nginx
+  when: ansible_os_family == 'RedHat'
+
+- name: Create NGINX config from template
+  ansible.builtin.template:
+    src: templates/nginx_minio.conf.j2
+    dest: /etc/nginx/conf.d/minio.conf
+    owner: root
+    group: root
+    mode: 0744
+
+- name: Opening  HTTP port via Firewalld (on RHEL based distrs)
+  ansible.posix.firewalld:
+    port: 80/tcp
+    permanent: true
+    state: enabled
+  when: ansible_os_family == 'RedHat'
+
+- name: Restart Firewalld
+  ansible.builtin.systemd_service:
+    name: firewalld.service
+    state: restarted
+  when: ansible_os_family == 'RedHat'
+
+- name: Set httpd_can_network_connect flag on and keep it persistent across reboots
+  ansible.posix.seboolean:
+    name: httpd_can_network_connect
+    state: true
+    persistent: true
+  when: ansible_os_family == 'RedHat'
+
+- name: Starting NGINX and enabling service on cluster nodes
+  ansible.builtin.systemd_service:
+    name: nginx.service
+    state: started
+    enabled: true
+    daemon_reload: true

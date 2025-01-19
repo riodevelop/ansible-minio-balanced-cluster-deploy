@@ -1,0 +1,28 @@
+global_defs {
+    enable_script_security
+}
+
+vrrp_script nginx_check {
+    script "/usr/bin/curl http://127.0.0.1"
+    interval 5
+    user nginx
+}
+
+vrrp_instance web {
+    state {{ keepalived_state }}
+    interface {{ keepalived_iface }}
+    virtual_router_id {{ keepalived_router_id }}
+    priority {{ keepalived_priority }}
+    advert_int 2
+    preempt_delay 30
+    authentication {
+        auth_type PASS
+        auth_pass {{ keepalived_password }}
+    }
+    virtual_ipaddress {
+        {{ keepalived_vip }}
+    }
+    track_script {
+        nginx_check
+    }
+}

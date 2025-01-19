@@ -1,0 +1,25 @@
+# That playbook deploy etcd culster
+
+- name: Deploying MinIO cluster with optional NGINX balancing
+  hosts: minio
+  become: true
+  gather_facts: false
+  tasks:
+
+   - name: Gather selected facts
+     ansible.builtin.setup:
+      filter:
+       - 'ansible_os_family'
+       - 'ansible_{{minio_iface}}'
+
+   - name: Installing MinIO
+     ansible.builtin.include_tasks:
+      file: tasks/install_minio.yml
+
+   - name: Installing NGINX balancer
+     ansible.builtin.include_tasks:
+      file: tasks/install_nginx.yml
+
+   - name: Installing keepalived
+     ansible.builtin.include_tasks:
+      file: tasks/install_keepalived.yml

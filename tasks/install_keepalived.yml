@@ -1,0 +1,23 @@
+# That playbook installing keeepalived
+---
+
+- name: Installing keeepalived
+  ansible.builtin.dnf:
+    name:
+      - keepalived
+  when: ansible_os_family == 'RedHat'
+
+- name: Create keeepalived config from template
+  ansible.builtin.template:
+    src: templates/keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Starting and enabling keepalived service on cluster nodes
+  ansible.builtin.systemd_service:
+    name: keepalived.service
+    state: started
+    enabled: true
+    daemon_reload: true
