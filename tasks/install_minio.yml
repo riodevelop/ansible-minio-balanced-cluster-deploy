@@ -3,7 +3,7 @@
 
 - name: Install MinIO from RPM
   ansible.builtin.dnf:
-    name: https://dl.min.io/server/minio/release/linux-amd64/minio-{{ minio_build }}.x86_64.rpm
+    name: https://dl.min.io/server/minio/release/linux-amd64/archive/minio-{{ minio_build }}.x86_64.rpm
     state: present
     disable_gpg_check: true
   when: ansible_os_family == 'RedHat'

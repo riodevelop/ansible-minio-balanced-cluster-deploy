@@ -2,9 +2,9 @@ upstream minio_s3 {
    least_conn;
 
    {% for host in groups['minio'] %}
-      server {{ hostvars[host]['ansible_facts'][minio_iface]['ipv4']['address'] }}:{{ minio_port }};
-         {% if not loop.last %}
-         {% endif %}
+   server {{ hostvars[host]['ansible_facts'][minio_iface]['ipv4']['address'] }}:{{ minio_port }};
+   {% if not loop.last %}
+   {% endif %}
    {% endfor %}
 
 }
