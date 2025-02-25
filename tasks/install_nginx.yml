@@ -26,7 +26,10 @@
   ansible.builtin.systemd_service:
     name: firewalld.service
     state: restarted
+    immediate: true
+  ignore_errors: yes
   when: ansible_os_family == 'RedHat'
+ 
 
 - name: Set httpd_can_network_connect flag on and keep it persistent across reboots
   ansible.posix.seboolean:
